@@ -1,5 +1,7 @@
 package coarseProject;
 
+import courseProject.boards.Board;
+
 public class Position {
 	private byte x;
 	private byte y;

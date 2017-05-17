@@ -6,6 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.JLabel;
 
+import courseProject.boards.Board;
+
 public class Timer {
 
 	private View view;

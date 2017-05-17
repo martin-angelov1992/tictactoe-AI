@@ -12,6 +12,8 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import courseProject.boards.Board;
+
 public class ClickBox extends JPanel {
 
 	private byte x;

@@ -15,11 +15,16 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.border.LineBorder;
+
+import courseProject.boards.Board;
+import courseProject.movementProviders.MovementProvider;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+// ToDo: Make singleton
 public class View {
 
 	private JFrame frame;
@@ -29,6 +34,8 @@ public class View {
 
 	private Timer timer;
 
+	private MovementProvider movementProvider;
+
 	private static Set<Runnable> invalidThreads;
 
 	private static Runnable currentThinker;
@@ -37,12 +44,12 @@ public class View {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	public static void show(final MovementProvider movementProvider) {
 		invalidThreads = new HashSet<>();
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					View window = new View();
+					View window = new View(movementProvider);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -54,7 +61,8 @@ public class View {
 	/**
 	 * Create the application.
 	 */
-	public View() {
+	public View(final MovementProvider movementProvider) {
+		this.movementProvider = movementProvider;
 		initialize();
 	}
 
@@ -276,7 +284,7 @@ public class View {
 				currentThinker = this;
 				Board board = Board.getInstance();
 		
-				Position botMove = AlphaBetaMovementProvider.getAction(board);
+				Position botMove = movementProvider.getAction(board);
 				Player bot = board.getBot();
 	
 				if (invalidThreads.contains(this)) {

@@ -1,13 +1,13 @@
-package coarseProject;
+package courseProject.boards;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import coarseProject.Player;
+import coarseProject.Position;
 import coarseProject.winnerchecks.DiagonalWinnerChecker;
 import coarseProject.winnerchecks.HorizontalWinnerChecker;
 import coarseProject.winnerchecks.VerticalWinnerChecker;
@@ -15,7 +15,6 @@ import coarseProject.winnerchecks.WinnerChecker;
 
 public class Board {
 	private byte[][] squares;
-	private Integer value;
 	private List<Player> players;
 	private Player playerTurn;
 	private boolean gameStarted = false;
@@ -34,14 +33,6 @@ public class Board {
 		players = new LinkedList<>();
 		squares = new byte[BOARD_SIZE][BOARD_SIZE];
 		addDefaultPlayers();
-	}
-
-	public Integer getValue() {
-		return value;
-	}
-
-	public void setValue(Integer value) {
-		this.value = value;
 	}
 
 	public Player getPlayerTurn() {
@@ -94,7 +85,7 @@ public class Board {
 		return getWinner(squares);
 	}
 
-	private Player getWinner(byte[][] squares) {
+	Player getWinner(byte[][] squares) {
 		for (WinnerChecker checker : checkers) {
 			byte playerID = checker.getWinnerID(squares);
 			if (playerID != 0) {
@@ -187,66 +178,7 @@ public class Board {
 		return gameOver;
 	}
 
-	public Map<Player, Integer> getScores() {
-		Map<Player, Integer> scores = new HashMap<>();
-
-		for (Player player : players) {
-			int winningSquares = getWinningSquaresFor(player);
-			scores.put(player, winningSquares);
-		}
-
-		return scores;
-	}
-
-	public int getScore() {
-		Player winner = getWinner();
-
-		Player me = getPlayer();
-		Player bot = getBot();
-
-		if (winner != null) {
-			if (winner.getID() == bot.getID()) {
-				return 1000;
-			}
-
-			if (winner.getID() == me.getID()) {
-				return -1000;
-			}
-		}
-
-		Map<Player, Integer> scores = getScores();
-
-		return scores.get(bot) - scores.get(me);
-	}
-
-	private int getWinningSquaresFor(Player player) {
-		int winningSquares = 0;
-		byte[][] squares = new byte[this.squares.length][this.squares.length];
-
-		for (int i=0;i<squares.length;++i) {
-			for (int j=0;j<squares.length;++j) {
-				squares[i][j] = this.squares[i][j];
-			}
-		}
-
-		for (int i=0;i<squares.length;++i) {
-			for (int j=0;j<squares.length;++j) {
-				if (squares[i][j] == 0) {
-					squares[i][j] = player.getID();
-					Player winner = getWinner(squares);
-
-					if (winner != null && winner.getID() == player.getID()) {
-						++winningSquares;
-					}
-
-					squares[i][j] = 0;
-				}
-			}
-		}
-
-		return winningSquares;
-	}
-
+	// Iterator pattern
 	private class MoveIterator implements Iterator<Position> {
 
 		private byte x = 1;
@@ -299,7 +231,6 @@ public class Board {
 		board.players = this.players;
 		board.squares = cloneSquares(this.squares);
 		board.playerTurn = this.playerTurn;
-		board.value = this.value;
 		board.gameStarted = this.gameStarted;
 
 		return board;
@@ -319,6 +250,7 @@ public class Board {
 		return moves;
 	}
 
+	// factory method
 	public Board with(Position successor) {
 		Board newBoard = new Board();
 
@@ -326,13 +258,12 @@ public class Board {
 		newBoard.squares = cloneSquares(squares);
 		newBoard.squares[successor.getX()][successor.getY()] = newBoard.playerTurn.getID();
 		newBoard.players = players;
-		newBoard.value = value;
 		newBoard.gameStarted = gameStarted;
 
 		return newBoard;
 	}
 
-	private static byte[][] cloneSquares(byte[][] squares) {
+	public static byte[][] cloneSquares(byte[][] squares) {
 		byte[][] newSquares = new byte[squares.length][squares.length];
 
 		for (int i=0;i<squares.length;++i) {
@@ -354,5 +285,9 @@ public class Board {
 		}
 
 		return false;
+	}
+
+	byte[][] getSquares() {
+		return squares;
 	}
 }

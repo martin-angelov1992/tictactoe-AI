@@ -1,9 +1,14 @@
-package coarseProject;
+package courseProject.movementProviders;
 
 import java.util.List;
 
-public class AlphaBetaMovementProvider {
-	public static Position getAction(Board initialState) {
+import coarseProject.Player;
+import coarseProject.Position;
+import courseProject.boards.AIBoard;
+import courseProject.boards.Board;
+
+public class AlphaBetaMovementProvider implements MovementProvider {
+	public Position getAction(Board initialState) {
 		Thinker thinker = new Thinker();
 		thinker.setInitialState(initialState);
 		thinker.start();
@@ -62,7 +67,7 @@ public class AlphaBetaMovementProvider {
 			return null;
 		}
 
-		public int maxValue(Board state, int alpha, int beta, int depth) {
+		public int maxValue(AIBoard state, int alpha, int beta, int depth) {
 			if (terminalTest(state) || depth == 0 || suspended) {
 				int score = state.getScore();
 				state.setValue(score);
@@ -94,7 +99,7 @@ public class AlphaBetaMovementProvider {
 			return v;
 		}
 
-		public int minValue(Board state, int alpha, int beta, int depth) {
+		public int minValue(AIBoard state, int alpha, int beta, int depth) {
 			if (terminalTest(state) || depth == 0 || suspended) {
 				int score = state.getScore();
 				return score;
@@ -102,15 +107,15 @@ public class AlphaBetaMovementProvider {
 
 			int v = Integer.MAX_VALUE;
 
-			List<Position> actions = state.getAllActions();
+			List<Position> actions = state.getBoard().getAllActions();
 
 			for (Position successor : actions) {
-				if (!state.validMove(state.getPlayer(), successor)) {
+				if (!state.getBoard().validMove(state.getBoard().getPlayer(), successor)) {
 					System.err.println("Invalid Move!");
 					continue;
 				}
 
-				Board newState = state.with(successor);
+				Board newState = state.getBoard().with(successor);
 				int maxValue = maxValue(newState, alpha, beta, depth - 1);
 				v = Math.min(v, maxValue);
 				newState.setValue(v);
@@ -126,9 +131,9 @@ public class AlphaBetaMovementProvider {
 			return v;
 		}
 
-		public static boolean terminalTest(Board state) {
-			Player winner = state.getWinner();
-			return winner != null || !state.hasMoreMoves();
+		public static boolean terminalTest(AIBoard state) {
+			Player winner = state.getBoard().getWinner();
+			return winner != null || !state.getBoard().hasMoreMoves();
 		}
 	}
 

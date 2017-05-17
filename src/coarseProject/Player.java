@@ -43,10 +43,12 @@ public class Player {
 		return symbol;
 	}
 
+	// Factory Method
 	public static Player newBot(String name, byte ID) {
 		return new Player(name, ID, true, Symbol.O);
 	}
 
+	// Factory Method
 	public static Player newPlayer(String name, byte ID) {
 		return new Player(name, ID, false, Symbol.X);
 	}
