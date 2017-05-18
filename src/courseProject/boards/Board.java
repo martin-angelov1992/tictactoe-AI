@@ -236,20 +236,6 @@ public class Board {
 		return board;
 	}
 
-	public List<Position> getAllActions() {
-		List<Position> moves = new LinkedList<>();
-
-		for (int i=0;i<BOARD_SIZE;++i) {
-			for (int j=0;j<BOARD_SIZE;++j) {
-				if (squares[i][j] == 0) {
-					moves.add(Position.getPosition((byte)i, (byte)j));
-				}
-			}
-		}
-
-		return moves;
-	}
-
 	// factory method
 	public Board with(Position successor) {
 		Board newBoard = new Board();
@@ -289,5 +275,9 @@ public class Board {
 
 	byte[][] getSquares() {
 		return squares;
+	}
+
+	List<Player> getPlayers() {
+		return players;
 	}
 }

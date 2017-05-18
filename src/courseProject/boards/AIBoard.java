@@ -1,9 +1,12 @@
 package courseProject.boards;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import coarseProject.Player;
+import coarseProject.Position;
 
 public class AIBoard {
 	private Board board;
@@ -29,7 +32,7 @@ public class AIBoard {
 	public Map<Player, Integer> getScores() {
 		Map<Player, Integer> scores = new HashMap<>();
 
-		for (Player player : players) {
+		for (Player player : board.getPlayers()) {
 			int winningSquares = getWinningSquaresFor(player);
 			scores.put(player, winningSquares);
 		}
@@ -78,5 +81,21 @@ public class AIBoard {
 		}
 
 		return winningSquares;
+	}
+
+
+
+	public List<Position> getAllActions() {
+		List<Position> moves = new LinkedList<>();
+
+		for (int i=0;i<Board.BOARD_SIZE;++i) {
+			for (int j=0;j<Board.BOARD_SIZE;++j) {
+				if (board.getSquares()[i][j] == 0) {
+					moves.add(Position.getPosition((byte)i, (byte)j));
+				}
+			}
+		}
+
+		return moves;
 	}
 }

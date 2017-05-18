@@ -25,7 +25,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 // ToDo: Make singleton
-public class View {
+public class View implements EventListener {
 
 	private JFrame frame;
 
@@ -34,22 +34,17 @@ public class View {
 
 	private Timer timer;
 
-	private MovementProvider movementProvider;
-
-	private static Set<Runnable> invalidThreads;
-
-	private static Runnable currentThinker;
+	private static volatile View instance;
 	//private static final int BOX_SIZE = 70;
 
 	/**
 	 * Launch the application.
 	 */
-	public static void show(final MovementProvider movementProvider) {
-		invalidThreads = new HashSet<>();
+	public void show() {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					View window = new View(movementProvider);
+					View window = new View();
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -61,8 +56,7 @@ public class View {
 	/**
 	 * Create the application.
 	 */
-	public View(final MovementProvider movementProvider) {
-		this.movementProvider = movementProvider;
+	private View() {
 		initialize();
 	}
 
@@ -198,17 +192,13 @@ public class View {
 			clearBoard();
 			setMyTurn();
 			startOrResetTimer(false);
-			invalidThreads.add(currentThinker);
-			currentThinker = null;
 			break;
 		case 1:
 			Board.startNewGame(true);
 			clearBoard();
 			setBotTurn();
 			startOrResetTimer(true);
-			makeBotMove();		
-			invalidThreads.add(currentThinker);
-			currentThinker = null;
+			makeBotMove();
 			break;
 		default:
 			return;
@@ -271,8 +261,6 @@ public class View {
 	}
 
 	public void stopGame() {
-		invalidThreads.add(currentThinker);
-		currentThinker = null;
 		Board board = Board.getInstance();
 		board.stopGame();
 		timer.stop();
@@ -281,18 +269,10 @@ public class View {
 	public void makeBotMove() {
 		Runnable r = new Runnable() {
 			public void run(){
-				currentThinker = this;
 				Board board = Board.getInstance();
-		
-				Position botMove = movementProvider.getAction(board);
-				Player bot = board.getBot();
-	
-				if (invalidThreads.contains(this)) {
-					invalidThreads.remove(this);
-					return;
-				}
 
-				invalidThreads.remove(this);
+				Player bot = board.getBot();
+
 				board.tryMakeMove(bot, botMove);
 		
 				String file = bot.getSymbol().getFIle()+".png";
@@ -315,11 +295,49 @@ public class View {
 
 	public void gotWinner(String who) {
 		stopGame();
-		
-		//whosTurn.setText("");
-		//timeInfo.setText("");
 
 		JOptionPane.showMessageDialog(null, who+" Won!");
+	}
 
+	public static View getInstance() {
+		if (instance == null) {
+			synchronized(View.class) {
+				if (instance == null) {
+					instance = new View();
+				}
+			}
+		}
+
+		return instance;
+	}
+
+	@Override
+	public void madeBotMove(Position pos) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void madePlayerMove(Position pos) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void timesUp(Player winner) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void gameStarted(Player whosFirst) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void gotWinner(Player winner) {
+		// TODO Auto-generated method stub
+		
 	}
 }
