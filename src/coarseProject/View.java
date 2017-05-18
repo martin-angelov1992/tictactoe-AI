@@ -5,7 +5,6 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
@@ -17,14 +16,12 @@ import javax.swing.JOptionPane;
 import javax.swing.border.LineBorder;
 
 import courseProject.boards.Board;
-import courseProject.movementProviders.MovementProvider;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-// ToDo: Make singleton
 public class View implements EventListener {
 
 	private JFrame frame;
@@ -32,10 +29,9 @@ public class View implements EventListener {
 	private JLabel whosTurn;
 	private JLabel timeInfo;
 
-	private Timer timer;
+	private Board board;
 
 	private static volatile View instance;
-	//private static final int BOX_SIZE = 70;
 
 	/**
 	 * Launch the application.
@@ -44,8 +40,7 @@ public class View implements EventListener {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					View window = new View();
-					window.frame.setVisible(true);
+					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -189,36 +184,13 @@ public class View implements EventListener {
 		switch (option) {
 		case 0:
 			Board.startNewGame(false);
-			clearBoard();
-			setMyTurn();
-			startOrResetTimer(false);
 			break;
 		case 1:
 			Board.startNewGame(true);
-			clearBoard();
-			setBotTurn();
-			startOrResetTimer(true);
-			makeBotMove();
 			break;
 		default:
 			return;
 		}
-	}
-
-	private void startOrResetTimer(boolean botTurn) {
-		if (timer != null) {
-			timer.stop();
-		}
-
-		timer = new Timer(this, botTurn);
-		timer.run();
-	}
-
-	public void notifyMadeMove(boolean isBot) {
-		timer.stop();
-
-		timer = new Timer(this, !isBot);
-		timer.run();
 	}
 
 	public JLabel getTimeInfo() {
@@ -256,46 +228,10 @@ public class View implements EventListener {
 			return;
 		}
 
-		stopGame();
 		JOptionPane.showMessageDialog(null, "Time's up!");
 	}
 
-	public void stopGame() {
-		Board board = Board.getInstance();
-		board.stopGame();
-		timer.stop();
-	}
-
-	public void makeBotMove() {
-		Runnable r = new Runnable() {
-			public void run(){
-				Board board = Board.getInstance();
-
-				Player bot = board.getBot();
-
-				board.tryMakeMove(bot, botMove);
-		
-				String file = bot.getSymbol().getFIle()+".png";
-	
-				ClickBox box = ClickBox.getBoxForPos(botMove.getX(), botMove.getY());
-				box.putBackground(file);
-		
-				notifyMadeMove(true);
-	
-				Player winner = board.getWinner();
-				if (winner != null) {
-					gotWinner("Bot");
-				}
-			}
-		};
-
-		Thread t = new Thread(r);
-		t.start();
-	}
-
 	public void gotWinner(String who) {
-		stopGame();
-
 		JOptionPane.showMessageDialog(null, who+" Won!");
 	}
 
@@ -313,31 +249,41 @@ public class View implements EventListener {
 
 	@Override
 	public void madeBotMove(Position pos) {
-		// TODO Auto-generated method stub
+		Player bot = board.getBot();
+
+		String file = bot.getSymbol().getFIle()+".png";
 		
+		ClickBox box = ClickBox.getBoxForPos(pos.getX(), pos.getY());
+		box.putBackground(file);
 	}
 
 	@Override
 	public void madePlayerMove(Position pos) {
-		// TODO Auto-generated method stub
+		Player player = board.getPlayer();
+
+		String file = player.getSymbol().getFIle()+".png";
 		
+		ClickBox box = ClickBox.getBoxForPos(pos.getX(), pos.getY());
+		box.putBackground(file);
 	}
 
 	@Override
-	public void timesUp(Player winner) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void gameStarted(Player whosFirst) {
-		// TODO Auto-generated method stub
-		
+	public void gameStarted() {
+		clearBoard();
 	}
 
 	@Override
 	public void gotWinner(Player winner) {
-		// TODO Auto-generated method stub
-		
+		gotWinner(winner.getName());
+	}
+
+	@Override
+	public void onBotTurn() {
+		setBotTurn();
+	}
+
+	@Override
+	public void onPlayerTurn() {
+		setMyTurn();
 	}
 }

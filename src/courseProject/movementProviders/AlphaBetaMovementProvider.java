@@ -53,11 +53,12 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 		}
 
 		public Position alphaBetaSearch(Board state, int depth) {
-			int v = maxValue(state, Integer.MIN_VALUE, Integer.MAX_VALUE, depth);
+			AIBoard aiBoard = new AIBoard(state);
+			int v = maxValue(aiBoard, Integer.MIN_VALUE, Integer.MAX_VALUE, depth);
 			System.out.println("v="+v);
-			List<Position> actions = state.getAllActions();
+			List<Position> actions = aiBoard.getAllActions();
 			for (Position successor : actions) {
-				Board stateWithAction = state.with(successor);
+				AIBoard stateWithAction = aiBoard.with(successor);
 
 				if (stateWithAction.getScore() == v) {
 					return successor;
@@ -79,12 +80,12 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 			List<Position> actions = state.getAllActions();
 
 			for (Position successor : actions) {
-				if (!state.validMove(state.getBot(), successor)) {
+				if (!state.getBoard().validMove(state.getBoard().getBot(), successor)) {
 					System.err.println("Invalid Move!");
 					continue;
 				}
 
-				Board newState = state.with(successor);
+				AIBoard newState = state.with(successor);
 				int minValue = minValue(newState, alpha, beta, depth - 1);
 				v = Math.max(v, minValue);
 				newState.setValue(v);
@@ -107,7 +108,7 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 
 			int v = Integer.MAX_VALUE;
 
-			List<Position> actions = state.getBoard().getAllActions();
+			List<Position> actions = state.getAllActions();
 
 			for (Position successor : actions) {
 				if (!state.getBoard().validMove(state.getBoard().getPlayer(), successor)) {
@@ -115,7 +116,7 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 					continue;
 				}
 
-				Board newState = state.getBoard().with(successor);
+				AIBoard newState = state.with(successor);
 				int maxValue = maxValue(newState, alpha, beta, depth - 1);
 				v = Math.min(v, maxValue);
 				newState.setValue(v);

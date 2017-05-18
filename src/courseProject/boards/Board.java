@@ -1,7 +1,6 @@
 package courseProject.boards;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +28,7 @@ public class Board {
 	public static final int MOVE_SECONDS = 4;
 	public static final int BOARD_SIZE = 3;
 
-	private Board() {
+	Board() {
 		players = new LinkedList<>();
 		squares = new byte[BOARD_SIZE][BOARD_SIZE];
 		addDefaultPlayers();
@@ -176,89 +175,6 @@ public class Board {
 
 	public boolean isGameOver() {
 		return gameOver;
-	}
-
-	// Iterator pattern
-	private class MoveIterator implements Iterator<Position> {
-
-		private byte x = 1;
-		private byte y = 1;
-
-		@Override
-		public boolean hasNext() {
-			// This call will mutate the iterator but still no blocks will be
-			// skipped
-			Position nextBlock = getNext();
-			return nextBlock != null;
-		}
-
-		@Override
-		public Position next() {
-			Position nextBlock = getNext();
-			mutate();
-			return nextBlock;
-		}
-
-		private void mutate() {
-			if (y == BOARD_SIZE-1) {
-				++x;
-				y = 0;
-			} else {
-				++y;
-			}
-		}
-
-		private Position getNext() {
-			for (; x < BOARD_SIZE; ++x) {
-				for (; y < BOARD_SIZE; ++y) {
-					if (squares[x][y] == 0) {
-						return Position.getPosition(x, y);
-					}
-				}
-			}
-
-			return null;
-		}
-	}
-
-	public Iterator<Position> movementIterator() {
-		return new MoveIterator();
-	}
-
-	public Board clone() {
-		Board board = new Board();
-
-		board.players = this.players;
-		board.squares = cloneSquares(this.squares);
-		board.playerTurn = this.playerTurn;
-		board.gameStarted = this.gameStarted;
-
-		return board;
-	}
-
-	// factory method
-	public Board with(Position successor) {
-		Board newBoard = new Board();
-
-		newBoard.playerTurn = getOtherPlayer(playerTurn);
-		newBoard.squares = cloneSquares(squares);
-		newBoard.squares[successor.getX()][successor.getY()] = newBoard.playerTurn.getID();
-		newBoard.players = players;
-		newBoard.gameStarted = gameStarted;
-
-		return newBoard;
-	}
-
-	public static byte[][] cloneSquares(byte[][] squares) {
-		byte[][] newSquares = new byte[squares.length][squares.length];
-
-		for (int i=0;i<squares.length;++i) {
-			for (int j=0;j<squares[i].length;++j) {
-				newSquares[i][j] = squares[i][j];
-			}
-		}
-
-		return newSquares;
 	}
 
 	public boolean hasMoreMoves() {
