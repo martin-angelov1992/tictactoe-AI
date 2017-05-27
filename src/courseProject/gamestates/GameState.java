@@ -1,8 +1,14 @@
 package courseProject.gamestates;
 
-import coarseProject.Player;
+import coarseProject.Game;
 import coarseProject.Position;
 
-public interface GameState {
-	public boolean validMove(Player player, Position pos);
+public abstract class GameState {
+	protected Game game;
+
+	public GameState(Game game) {
+		this.game = game;
+	}
+
+	public abstract boolean validMove(Position pos);
 }

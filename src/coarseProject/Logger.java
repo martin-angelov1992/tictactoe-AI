@@ -1,6 +1,10 @@
 package coarseProject;
 
-public class Logger implements EventListener {
+public class Logger implements EventListener, TimeEventsListener {
+
+	private static volatile Logger instance;
+
+	private Logger() {}
 
 	@Override
 	public void madeBotMove(Position pos) {
@@ -34,5 +38,30 @@ public class Logger implements EventListener {
 	@Override
 	public void onPlayerTurn() {
 		System.out.println("It's your turn.");
+	}
+
+	public static Logger getInstance() {
+		if (instance == null) {
+			synchronized (Logger.class) {
+				if (instance == null) {
+					instance = new Logger();
+				}
+			}
+		}
+
+		return instance;
+	}
+
+	@Override
+	public void onTimerTick(int timeLeft) {}
+
+	@Override
+	public void onTimerEnd() {
+		System.out.println("Time ended.");
+	}
+
+	@Override
+	public void onDraw() {
+		System.out.println("It's draw.");
 	}
 }

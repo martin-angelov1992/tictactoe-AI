@@ -3,9 +3,9 @@ package courseProject.gamestates;
 import coarseProject.Game;
 import coarseProject.Position;
 
-public class GameOverState extends GameState {
+public class NotStartedState extends GameState {
 
-	public GameOverState(Game game) {
+	public NotStartedState(Game game) {
 		super(game);
 	}
 

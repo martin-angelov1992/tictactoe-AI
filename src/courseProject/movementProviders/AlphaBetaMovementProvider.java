@@ -7,7 +7,7 @@ import coarseProject.Position;
 import courseProject.boards.AIBoard;
 import courseProject.boards.Board;
 
-public class AlphaBetaMovementProvider implements MovementProvider {
+public class AlphaBetaMovementProvider extends MovementProvider {
 	public Position getAction(Board initialState) {
 		Thinker thinker = new Thinker();
 		thinker.setInitialState(initialState);
@@ -55,8 +55,7 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 		public Position alphaBetaSearch(Board state, int depth) {
 			AIBoard aiBoard = new AIBoard(state);
 			int v = maxValue(aiBoard, Integer.MIN_VALUE, Integer.MAX_VALUE, depth);
-			System.out.println("v="+v);
-			List<Position> actions = aiBoard.getAllActions();
+			List<Position> actions = state.getAllActions();
 			for (Position successor : actions) {
 				AIBoard stateWithAction = aiBoard.with(successor);
 
@@ -77,7 +76,7 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 
 			int v = Integer.MIN_VALUE;
 
-			List<Position> actions = state.getAllActions();
+			List<Position> actions = state.getBoard().getAllActions();
 
 			for (Position successor : actions) {
 				if (!state.getBoard().validMove(state.getBoard().getBot(), successor)) {
@@ -108,7 +107,7 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 
 			int v = Integer.MAX_VALUE;
 
-			List<Position> actions = state.getAllActions();
+			List<Position> actions = state.getBoard().getAllActions();
 
 			for (Position successor : actions) {
 				if (!state.getBoard().validMove(state.getBoard().getPlayer(), successor)) {
@@ -137,5 +136,4 @@ public class AlphaBetaMovementProvider implements MovementProvider {
 			return winner != null || !state.getBoard().hasMoreMoves();
 		}
 	}
-
 }

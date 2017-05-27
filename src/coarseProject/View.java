@@ -15,21 +15,19 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.border.LineBorder;
 
-import courseProject.boards.Board;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class View implements EventListener {
+public class View implements EventListener, TimeEventsListener {
 
 	private JFrame frame;
 
 	private JLabel whosTurn;
 	private JLabel timeInfo;
 
-	private Board board;
+	private Game game = Game.getInstance();
 
 	private static volatile View instance;
 
@@ -183,10 +181,10 @@ public class View implements EventListener {
 
 		switch (option) {
 		case 0:
-			Board.startNewGame(false);
+			game.startNewGame(false);
 			break;
 		case 1:
-			Board.startNewGame(true);
+			game.startNewGame(true);
 			break;
 		default:
 			return;
@@ -215,6 +213,7 @@ public class View implements EventListener {
 	}
 
 	private void clearBoard() {
+		System.out.println("Clear board.");
 		Set<ClickBox> boxes = ClickBox.getBoxes();
 		for (ClickBox box : boxes) {
 			box.clearBackground();
@@ -248,19 +247,16 @@ public class View implements EventListener {
 	}
 
 	@Override
-	public void madeBotMove(Position pos) {
-		Player bot = board.getBot();
-
-		String file = bot.getSymbol().getFIle()+".png";
-		
-		ClickBox box = ClickBox.getBoxForPos(pos.getX(), pos.getY());
-		box.putBackground(file);
+	public void madePlayerMove(Position pos) {
+		madeMove(game.getPlayer(), pos);
 	}
 
 	@Override
-	public void madePlayerMove(Position pos) {
-		Player player = board.getPlayer();
+	public void madeBotMove(Position pos) {
+		madeMove(game.getBot(), pos);
+	}
 
+	private void madeMove(Player player, Position pos) {
 		String file = player.getSymbol().getFIle()+".png";
 		
 		ClickBox box = ClickBox.getBoxForPos(pos.getX(), pos.getY());
@@ -285,5 +281,25 @@ public class View implements EventListener {
 	@Override
 	public void onPlayerTurn() {
 		setMyTurn();
+	}
+
+	@Override
+	public void onTimerTick(int timeLeft) {
+		String whoHas = game.getPlayerTurn().isBot() ? "Bot has" : "You have";
+		String text = whoHas + " " + timeLeft+ 
+				" second" + (timeLeft == 1 ? "" : "s") + " to move";
+		//System.out.println("setting text to "+text);
+		timeInfo.setText(text);
+		timeInfo.paintImmediately(timeInfo.getVisibleRect());
+	}
+
+	@Override
+	public void onTimerEnd() {
+		notifyTimeOver(game.getPlayerTurn().isBot());
+	}
+
+	@Override
+	public void onDraw() {
+		JOptionPane.showMessageDialog(null, "Draw!");
 	}
 }

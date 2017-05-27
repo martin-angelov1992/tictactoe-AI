@@ -16,22 +16,26 @@ public class Board {
 	private byte[][] squares;
 	private List<Player> players;
 	private Player playerTurn;
-	private boolean gameStarted = false;
-	private boolean gameOver = false;
 	private static Set<WinnerChecker> checkers;
-	private static Board instance;
-
-	static {
-		initCheckersSet();
-	}
 
 	public static final int MOVE_SECONDS = 4;
 	public static final int BOARD_SIZE = 3;
 
-	Board() {
+	static {
+		initCheckers();
+	}
+
+	public Board() {
 		players = new LinkedList<>();
 		squares = new byte[BOARD_SIZE][BOARD_SIZE];
 		addDefaultPlayers();
+	}
+
+	private static void initCheckers() {
+		checkers = new HashSet<>();
+		checkers.add(new DiagonalWinnerChecker());
+		checkers.add(new HorizontalWinnerChecker());
+		checkers.add(new VerticalWinnerChecker());
 	}
 
 	public Player getPlayerTurn() {
@@ -39,36 +43,60 @@ public class Board {
 	}
 
 	private void addDefaultPlayers() {
-		Player me = Player.newPlayer("me", (byte)1);
-		Player bot = Player.newBot("bot", (byte)2);
+		Player me = Player.newPlayer("You", (byte)1);
+		Player bot = Player.newBot("Bot", (byte)2);
 		players.add(me);
 		players.add(bot);
 	}
 
-	private static void initCheckersSet() {
-		checkers = new HashSet<>();
-		checkers.add(new DiagonalWinnerChecker());
-		checkers.add(new HorizontalWinnerChecker());
-		checkers.add(new VerticalWinnerChecker());
-	}
+	public List<Position> getAllActions() {
+		List<Position> moves = new LinkedList<>();
 
-	public boolean tryMakeMove(Player player, Position pos) {
-		if (!validMove(player, pos)) {
-			return false;
+		for (int i=0;i<Board.BOARD_SIZE;++i) {
+			for (int j=0;j<Board.BOARD_SIZE;++j) {
+				if (squares[i][j] == 0) {
+					moves.add(Position.getPosition((byte)i, (byte)j));
+				}
+			}
 		}
 
-		squares[pos.getX()][pos.getY()] = player.getID();
-		Player otherPlayer = getOtherPlayer(player);
-		playerTurn = otherPlayer;
+		return moves;
+	}
 
-		return true;
+	public Board clone() {
+		Board board = new Board();
+
+		board.players = this.players;
+		board.squares = cloneSquares(this.squares);
+		board.playerTurn = this.playerTurn;
+
+		return board;
+	}
+
+	Board with(Position successor) {
+		Board newBoard = new Board();
+
+		newBoard.playerTurn = getOtherPlayer(playerTurn);
+		newBoard.squares = cloneSquares(squares);
+		newBoard.squares[successor.getX()][successor.getY()] = newBoard.playerTurn.getID();
+		newBoard.players = players;
+
+		return newBoard;
+	}
+
+	public static byte[][] cloneSquares(byte[][] squares) {
+		byte[][] newSquares = new byte[squares.length][squares.length];
+
+		for (int i=0;i<squares.length;++i) {
+			for (int j=0;j<squares[i].length;++j) {
+				newSquares[i][j] = squares[i][j];
+			}
+		}
+
+		return newSquares;
 	}
 
 	public boolean validMove(Player player, Position pos) {
-		if (gameOver || !gameStarted) {
-			return false;
-		}
-
 		if (player.getID() != playerTurn.getID()) {
 			return false;
 		}
@@ -81,7 +109,7 @@ public class Board {
 	}
 
 	public Player getWinner() {
-		return getWinner(squares);
+		return getWinner(getSquares());
 	}
 
 	Player getWinner(byte[][] squares) {
@@ -92,7 +120,7 @@ public class Board {
 			}
 		}
 
-		return null;		
+		return null;
 	}
 
 	public void addPlayer(Player player) {
@@ -147,36 +175,6 @@ public class Board {
 		}
 	}
 
-	public boolean isGameStarted() {
-		return gameStarted;
-	}
-
-	public static void startNewGame(boolean botFirst) {
-		instance = new Board();
-		instance.gameStarted = true;
-		instance.playerTurn = botFirst ? instance.getBot() : instance.getPlayer();
-	}
-
-	public static Board getInstance() {
-		if (instance == null) {
-			synchronized (Board.class) {
-				if (instance == null) {
-					instance = new Board();
-				}
-			}
-		}
-
-		return instance;
-	}
-
-	public void stopGame() {
-		gameOver = true;
-	}
-
-	public boolean isGameOver() {
-		return gameOver;
-	}
-
 	public boolean hasMoreMoves() {
 		for (int i=0;i<squares.length;++i) {
 			for (int j=0;j<squares[i].length;++j) {
@@ -189,11 +187,15 @@ public class Board {
 		return false;
 	}
 
-	byte[][] getSquares() {
+	public byte[][] getSquares() {
 		return squares;
 	}
 
 	List<Player> getPlayers() {
 		return players;
+	}
+
+	public void setPlayerTurn(Player player) {
+		playerTurn = player;
 	}
 }

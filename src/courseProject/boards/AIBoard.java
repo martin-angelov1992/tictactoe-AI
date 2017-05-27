@@ -2,8 +2,6 @@ package courseProject.boards;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import coarseProject.Player;
@@ -67,44 +65,21 @@ public class AIBoard {
 	}
 
 	public AIBoard clone() {
-		AIBoard board = new AIBoard(board.clone());
-
-		board.players = this.players;
-		board.squares = cloneSquares(this.squares);
-		board.playerTurn = this.playerTurn;
-		board.gameStarted = this.gameStarted;
-
-		return board;
-	}
-
-	// factory method
-	public AIBoard with(Position successor) {
-		Board newBoard = new Board();
-
-		newBoard.playerTurn = getOtherPlayer(playerTurn);
-		newBoard.squares = cloneSquares(squares);
-		newBoard.squares[successor.getX()][successor.getY()] = newBoard.playerTurn.getID();
-		newBoard.players = players;
-		newBoard.gameStarted = gameStarted;
+		AIBoard newBoard = new AIBoard(board.clone());
 
 		return newBoard;
 	}
 
-	public static byte[][] cloneSquares(byte[][] squares) {
-		byte[][] newSquares = new byte[squares.length][squares.length];
+	// factory method
+	public AIBoard with(Position successor) {
+		AIBoard newBoard = new AIBoard(board.with(successor));
 
-		for (int i=0;i<squares.length;++i) {
-			for (int j=0;j<squares[i].length;++j) {
-				newSquares[i][j] = squares[i][j];
-			}
-		}
-
-		return newSquares;
+		return newBoard;
 	}
 
 	private int getWinningSquaresFor(Player player) {
 		int winningSquares = 0;
-		byte[][] squares = cloneSquares(board.getSquares());
+		byte[][] squares = Board.cloneSquares(board.getSquares());
 
 		for (int i=0;i<squares.length;++i) {
 			for (int j=0;j<squares.length;++j) {
@@ -123,23 +98,6 @@ public class AIBoard {
 
 		return winningSquares;
 	}
-
-
-
-	public List<Position> getAllActions() {
-		List<Position> moves = new LinkedList<>();
-
-		for (int i=0;i<Board.BOARD_SIZE;++i) {
-			for (int j=0;j<Board.BOARD_SIZE;++j) {
-				if (board.getSquares()[i][j] == 0) {
-					moves.add(Position.getPosition((byte)i, (byte)j));
-				}
-			}
-		}
-
-		return moves;
-	}
-
 
 	// Iterator pattern
 	private class MoveIterator implements Iterator<Position> {

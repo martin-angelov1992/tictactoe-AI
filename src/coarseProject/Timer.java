@@ -4,57 +4,73 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.JLabel;
-
 import courseProject.boards.Board;
 
 public class Timer {
-
-	private View view;
-	private int timeLeft;
 	private boolean botTurn;
+	private volatile int timeLeft;
 	private ScheduledExecutorService executor;
+	private EventDispatcher eventDispatcher;
 
-	public Timer(View view, boolean botTurn) {
-		this.view = view;
+	private static volatile Timer instance;
+
+	private Timer() {}
+
+	public void start(boolean botTurn) {
 		this.botTurn = botTurn;
-	}
+		if (executor != null) {
+			executor.shutdownNow();
+		}
 
-	public void run() {
 		timeLeft = Board.MOVE_SECONDS;
 		ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-		Runnable decreaser = new Decreaser();
+		Runnable decreaser = new Decreaser(executor);
 		executor.scheduleAtFixedRate(decreaser, 1, 1, TimeUnit.SECONDS);
-		printText();
 		this.executor = executor;
+		eventDispatcher = EventDispatcher.getInstance();
+		eventDispatcher.onTimerTick(timeLeft);
 	}
 
 	public void stop() {
-		executor.shutdown();
-	}
-
-	private void printText() {
-		JLabel label = view.getTimeInfo();
-		String whoHas = botTurn ? "Bot has" : "You have";
-		String text = whoHas + " " + timeLeft+ 
-				" second" + (timeLeft == 1 ? "" : "s") + " to move";
-		//System.out.println("setting text to "+text);
-		label.setText(text);
-		label.paintImmediately(label.getVisibleRect());
+		executor.shutdownNow();
 	}
 
 	private class Decreaser implements Runnable {
+		private ScheduledExecutorService executor;
+
+		public Decreaser(ScheduledExecutorService executor) {
+			this.executor = executor;
+		}
 
 		@Override
 		public void run() {
-			--timeLeft;
+			if (executor.isShutdown()) {
+				return;
+			}
 
-			printText();
+			--timeLeft;
+			eventDispatcher.onTimerTick(timeLeft);
 
 			if (timeLeft == 0) {
 				stop();
-				view.notifyTimeOver(botTurn);
+
+				// Let the bot think ;)
+				if (!botTurn) {
+					//eventDispatcher.onTimerEnd();
+				}
 			}
 		}
+	}
+
+	public static Timer getInstance() {
+		if (instance == null) {
+			synchronized(Timer.class) {
+				if (instance == null) {
+					instance = new Timer();
+				}
+			}
+		}
+
+		return instance;
 	}
 }

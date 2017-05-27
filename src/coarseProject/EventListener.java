@@ -7,4 +7,5 @@ public interface EventListener {
 	void gotWinner(Player winner);
 	void onBotTurn();
 	void onPlayerTurn();
+	void onDraw();
 }
